@@ -1,0 +1,48 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: two
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: two
+  template:
+    metadata:
+      labels:
+        run: two
+    spec:
+      containers:
+        - name: two-1
+          image: szakaly/two
+          imagePullPolicy: Always
+          env:
+            - name: CONTAINER_NAME
+              value: two-1
+          volumeMounts:
+            - name: input-volume
+              mountPath: /mnt/input
+            - name: internal-volume
+              mountPath: /mnt/output
+        - name: two-2
+          image: szakaly/two
+          imagePullPolicy: Always
+          env:
+            - name: CONTAINER_NAME
+              value: two-2
+          volumeMounts:
+            - name: internal-volume
+              mountPath: /mnt/input
+            - name: output-volume
+              mountPath: /mnt/output
+      volumes:
+        - name: input-volume
+          azureFile:
+            secretName: azure-secret
+            shareName: temp-share
+        - name: output-volume
+          azureFile:
+            secretName: azure-secret
+            shareName: output-share
+        - name: internal-volume
+          emptyDir: {}

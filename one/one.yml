@@ -1,0 +1,45 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: one
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: one
+  template:
+    metadata:
+      labels:
+        run: one
+    spec:
+      containers:
+      - name: one
+        image: szakaly/one
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: output-volume
+            mountPath: /mnt/output
+          - name: storage-volume
+            mountPath: /mnt/storage
+      volumes:
+        - name: output-volume
+          azureFile:
+            secretName: azure-secret
+            shareName: temp-share
+        - name: storage-volume
+          azureFile:
+            secretName: azure-secret
+            shareName: input-share
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: one
+spec:
+  selector:
+    run: one
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000

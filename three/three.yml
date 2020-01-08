@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: three
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      run: three
+  template:
+    metadata:
+      labels:
+        run: three
+    spec:
+      containers:
+      - name: three
+        image: szakaly/three
+        imagePullPolicy: Always
+        volumeMounts:
+          - name: input-volume
+            mountPath: /mnt/input
+      volumes:
+        - name: input-volume
+          azureFile:
+            secretName: azure-secret
+            shareName: output-share
+            readOnly: true
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: three
+spec:
+  selector:
+    run: three
+  type: LoadBalancer
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 5000
